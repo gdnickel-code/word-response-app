@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Word Response</title>
+</head>
+<body>
+  <h1>Create New Session</h1>
+  <button onclick="create()">Create</button>
+
+  <script>
+    async function create() {
+      const res = await fetch("/create", { method: "POST" });
+      const data = await res.json();
+      window.location.href = "/session/" + data.id;
+    }
+  </script>
+</body>
+</html>

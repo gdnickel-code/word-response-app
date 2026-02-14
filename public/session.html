@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Session</title>
+</head>
+<body>
+  <h1>Session</h1>
+  <div id="questions"></div>
+  <button onclick="submit()">Submit</button>
+
+  <script>
+    const id = window.location.pathname.split("/").pop();
+    let responses = [];
+
+    async function load() {
+      const res = await fetch("/data/" + id);
+      const data = await res.json();
+      responses = JSON.parse(data.responses);
+
+      const container = document.getElementById("questions");
+      container.innerHTML = "";
+
+      responses.forEach((r, i) => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <p>Response ${i + 1}</p>
+          <textarea onchange="update(${i}, this.value)">${r}</textarea>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function update(i, val) {
+      responses[i] = val;
+      fetch("/save/" + id, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ responses })
+      });
+    }
+
+    async function submit() {
+      window.location.href = "/submit/" + id;
+    }
+
+    load();
+  </script>
+</body>
+</html>

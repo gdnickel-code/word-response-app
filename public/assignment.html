@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Submit Response</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      max-width: 700px;
+      width: 100%;
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      background: #2563eb;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .msg {
+      text-align: center;
+      margin-top: 16px;
+      font-weight: 500;
+    }
+
+    .error { color: #dc2626; }
+    .success { color: #16a34a; }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>Submit Your Response</h2>
+
+    <label>Your Name</label>
+    <input id="name" autocomplete="name" />
+
+    <label>Your Response</label>
+    <textarea id="response"></textarea>
+
+    <button onclick="submitResponse()">Submit</button>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+<script>
+const assignmentId = window.location.pathname.split("/").pop();
+
+async function submitResponse() {
+  const name = document.getElementById("name").value.trim();
+  const response = document.getElementById("response").value.trim();
+  const msg = document.getElementById("msg");
+
+  if (!name || !response) {
+    msg.className = "msg error";
+    msg.innerText = "Please enter your name and response.";
+    return;
+  }
+
+  msg.className = "msg";
+  msg.innerText = "Submitting...";
+
+  try {
+    const res = await fetch("/submit-response/" + assignmentId, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, response })
+    });
+
+    const data = await res.json();
+
+    if (res.status === 409) {
+      msg.className = "msg error";
+      msg.innerText = "You have already submitted.";
+      return;
+    }
+
+    if (!res.ok) {
+      msg.className = "msg error";
+      msg.innerText = "Submission failed. Try again.";
+      return;
+    }
+
+    document.body.innerHTML =
+      "<div style='text-align:center;margin-top:40px;font-family:system-ui'>" +
+      "<h2 style='color:#16a34a'>Submitted ✔</h2>" +
+      "<p>You can close this page.</p>" +
+      "</div>";
+
+  } catch (e) {
+    msg.className = "msg error";
+    msg.innerText = "Connection error. Check internet.";
+  }
+}
+</script>
+
+</body>
+</html>
